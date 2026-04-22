@@ -1,0 +1,19 @@
+import pygame
+
+# Cấu hình màn hình
+WIDTH, HEIGHT = 1920, 1080
+FPS = 60
+
+# Màu sắc
+COLOR_BG = (10, 12, 18)
+COLOR_PANEL = (15, 20, 30)
+COLOR_BORDER = (200, 200, 200)
+COLOR_TEXT_BASE = (255, 255, 255)
+COLOR_SUMMON_BTN = (34, 139, 34)
+
+# Tọa độ mặc định
+DECK_POS = (1550, 850)
+GRAVE_POS = (1700, 850)
+HAND_START_X = 250
+BOARD_START_X = 400
+BOARD_Y = 420
