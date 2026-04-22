@@ -68,6 +68,7 @@ EARTH_MONSTERS = [
 ]
 
 # Danh sách bài môi trường 
+
 ENVIRONMENT_CARD = [
 ]
 
