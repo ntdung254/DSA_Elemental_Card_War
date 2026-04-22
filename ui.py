@@ -2,13 +2,11 @@ import pygame
 from PIL import Image
 from constants import *
 
-def draw_text(surface, text, x, y, font, color=COLOR_TEXT_BASE):
-    """Vẽ văn bản lên bề mặt hiển thị với tọa độ số nguyên."""
+def draw_text(surface, text, x, y, font, color=COLOR_TEXT_BASE): #Vẽ văn bản lên bề mặt hiển thị với tọa độ số nguyên
     img = font.render(str(text), True, color)
     surface.blit(img, (int(x), int(y)))
 
-def draw_zoom_panel(surface, card, x, y, fonts, offset):
-    """Hiển thị bảng thông tin chi tiết của lá bài đang được chọn."""
+def draw_zoom_panel(surface, card, x, y, fonts, offset): #Hiển thị bảng thông tin chi tiết của lá bài đang được chọn
     if not card: return
     off_x, off_y = offset
     px, py = x + off_x, y + off_y
@@ -34,8 +32,7 @@ def draw_zoom_panel(surface, card, x, y, fonts, offset):
     for i, (text, color) in enumerate(stats):
         draw_text(surface, text, px + 25 + (i % 2 * 180), py + 640 + (i // 2 * 50), fonts['stats'], color)
 
-def draw_board(surface, board, is_targeting, blink_val, offset):
-    """Vẽ bàn cờ và các quái vật trên sân."""
+def draw_board(surface, board, is_targeting, blink_val, offset): #Vẽ bàn cờ và các quái vật trên sân
     off_x, off_y = offset
     for i in range(4):
         bx, by = 400 + i * 220 + off_x, 420 + off_y
@@ -48,8 +45,7 @@ def draw_board(surface, board, is_targeting, blink_val, offset):
         if board.slots[i]:
             surface.blit(board.slots[i].image_board, (bx, by))
 
-def draw_hand(surface, player, ui_state, fonts, offset):
-    """Vẽ các lá bài trên tay và menu Summon."""
+def draw_hand(surface, player, ui_state, fonts, offset): #Vẽ các lá bài trên tay và menu Summon
     off_x, off_y = offset
     for i, card in enumerate(player.hand):
         hx, hy = 250 + i * 170 + off_x, 850 + off_y
@@ -58,13 +54,11 @@ def draw_hand(surface, player, ui_state, fonts, offset):
         surface.blit(card.image_hand, (hx, hy))
 
         if ui_state['show_menu_idx'] == i:
-            # Dùng COLOR_SUMMON (đã sửa lỗi NameError)
             pygame.draw.rect(surface, COLOR_SUMMON, (hx, hy - 60, 120, 40), 0, 5)
             pygame.draw.rect(surface, (255, 255, 255), (hx, hy - 60, 120, 40), 1, 5)
             draw_text(surface, "SUMMON", hx + 10, hy - 50, fonts['small'])
 
-def draw_slam_effect(surface, card, target_idx, progress, offset):
-    """Hiệu ứng lá bài đập mạnh từ trên cao xuống."""
+def draw_slam_effect(surface, card, target_idx, progress, offset): #Hiệu ứng lá bài đập mạnh từ trên cao xuống
     if not card: return
     off_x, off_y = offset
     bx, by = 400 + target_idx * 220, 420
