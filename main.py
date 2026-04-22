@@ -3,18 +3,18 @@ from constants import *
 import ui
 from animations import AnimationManager
 
-# --- KHỞI TẠO HỆ THỐNG (DISPLAY TRƯỚC) ---
+# Khổi tạo hệ thống (Display trước)
 os.environ['SDL_HINT_RENDER_SCALE_QUALITY'] = '2'
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE)
 pygame.display.set_caption("ELEMENTAL CARD WARS - Nguyễn Tấn Dũng (25520368)")
 
-# --- IMPORT DATA (SAU KHI ĐÃ CÓ DISPLAY) ---
+# Import Data
 from models import Player, Board
 from card_data import FULL_DATABASE
 
 def main():
-    """Vòng lặp chính quản lý trạng thái Game (Game Loop)."""
+    # Vòng lặp chính quản lý trạng thái Game
     clock = pygame.time.Clock()
     anim = AnimationManager()
     player = Player(FULL_DATABASE.copy())
@@ -39,7 +39,7 @@ def main():
         offset = anim.get_shake_offset()
         screen.fill(COLOR_BG)
 
-        # --- 1. XỬ LÝ SỰ KIỆN (INPUT) ---
+        # Input
         for event in pygame.event.get():
             if event.type == pygame.QUIT: running = False
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: running = False
@@ -77,14 +77,14 @@ def main():
                         if hx <= mx <= hx + 120 and hy <= my <= hy + 180:
                             ui_state['selected_idx'], ui_state['inspecting'] = i, card
                             if card.card_type == "Monster": ui_state['show_menu_idx'] = i
-                            else: # Spell/Env logic...
+                            else: 
                                 player.hand.pop(i); ui_state['selected_idx'] = -1; ui_state['inspecting'] = None
                             clicked_smth = True; break
 
-                if not clicked_smth: # Click-to-Clear
+                if not clicked_smth: # CLick vào vùng trống để thoát khỏi nội dung
                     ui_state['selected_idx'] = -1; ui_state['inspecting'] = None; ui_state['show_menu_idx'] = -1
 
-        # --- 2. CẬP NHẬT LOGIC (UPDATE) ---
+        # Update
         if ui_state['draw_anim']:
             tx = 250 + len(player.hand) * 170
             ui_state['draw_pos'][0] += (tx - ui_state['draw_pos'][0]) * 0.15
@@ -96,7 +96,7 @@ def main():
                 board.slots[ui_state['summon_target_idx']] = ui_state['summon_anim']
                 ui_state['summon_anim'] = None; anim.start_shake()
 
-        # --- 3. HIỂN THỊ (RENDER) ---
+        # Hiển thị
         # Deck
         pulse = anim.get_pulse(current_time)
         pygame.draw.rect(screen, (50, 80, 200 * pulse + 50), (1545+offset[0], 845+offset[1], 140, 190), 4, 12)
