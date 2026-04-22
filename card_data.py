@@ -68,7 +68,7 @@ EARTH_MONSTERS = [
 ]
 
 # Danh sách bài môi trường 
-ELEMENT_CARD = [
+ENVIRONMENT_CARD = [
 ]
 
 # Danh sách bài phép thuật
