@@ -50,8 +50,7 @@ class Card: # Lớp đại diện cho một lá bài trong trò chơi
 class Player: # Lớp quản lý thông tin và hành động của người chơi (HP, Deck, Hand)
     def __init__(self, deck_data): # Khởi tạo thông tin ban đầu của người chơi
         self.hp = 100 # Khởi tạo lượng máu ban đầu của người chơi là 100
-        # FIX: Dùng list(deck_data) để tạo bản sao, tránh việc xáo bài làm hỏng database gốc
-        self.deck = list(deck_data) 
+        self.deck = list(deck_data) # Khởi tạo bộ bài ban đầu
         self.hand = [] # Khởi tạo số lượng bài trên tay là rỗng
         random.shuffle(self.deck) # Xáo bài ngay khi bắt đầu trận
 
