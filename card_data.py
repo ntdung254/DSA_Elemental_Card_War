@@ -1,12 +1,6 @@
-# card_data.py
-# Sinh viên thực hiện: Nguyễn Tấn Dũng - 25520368
-# Môn học: IT003.Q21.CTTN - Đồ án: ELEMENTAL CARD WARS
-
 from models import Card
 
-# ==========================================
-# 1. DANH SÁCH BÀI QUÁI VẬT (MONSTER CARDS)
-# ==========================================
+# Danh sách bài quái vật (Monster)
 
 FIRE_MONSTERS = [
     Card("Sasuke Uchiha", "Monster", "Fire", "cards_list/fire_monster/sasuke_uchiha.png", stat_atk=30, stat_hp=15, stat_def=12, stat_spd=25, stat_eva=10, stat_cri=8),
@@ -73,7 +67,11 @@ EARTH_MONSTERS = [
     Card("Superalloy Darkshine", "Monster", "Earth", "cards_list/earth_monster/superalloy_darkshine.png", stat_atk=25, stat_hp=25, stat_def=45, stat_spd=5, stat_eva=0, stat_cri=0)
 ]
 
-# 2. DANH SÁCH BÀI PHÉP THUẬT (SPELL CARDS)
+# Danh sách bài môi trường 
+ELEMENT_CARD = [
+]
+
+# Danh sách bài phép thuật
 
 FIRE_SPELLS = [
 ]
@@ -93,9 +91,8 @@ EARTH_SPELLS = [
 NEUTRAL_SPELLS = [
 ]
 
-# ==========================================
-# 3. TỔNG HỢP TOÀN BỘ DATA
-# ==========================================
+# Tổng hợp Data
+
 ALL_MONSTERS = FIRE_MONSTERS + WATER_MONSTERS + LIGHTNING_MONSTERS + WIND_MONSTERS + EARTH_MONSTERS
-# ALL_SPELLS = FIRE_SPELLS + WATER_SPELLS + LIGHTNING_SPELLS + WIND_SPELLS + EARTH_SPELLS + NEUTRAL_SPELLS
-FULL_DATABASE = ALL_MONSTERS #+ ALL_SPELLS
+ALL_SPELLS = FIRE_SPELLS + WATER_SPELLS + LIGHTNING_SPELLS + WIND_SPELLS + EARTH_SPELLS + NEUTRAL_SPELLS
+FULL_DATABASE = ALL_MONSTERS + ELEMENT_CARD + ALL_SPELLS
