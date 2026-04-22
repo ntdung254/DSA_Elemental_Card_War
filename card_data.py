@@ -70,6 +70,28 @@ EARTH_MONSTERS = [
 # Danh sách bài môi trường 
 
 ENVIRONMENT_CARD = [
+    from models import Card
+
+ENVIRONMENT_CARDS = [
+    Card("Inferno Forge", "Environment", "Fire", 
+         "environment_cards/fire_environment/inferno_forge.png",
+         description="Basic: +10 ATK. Fire Resonance: +15 CRI."),
+
+    Card("Abyssal Tide Basin", "Environment", "Water", 
+         "environment_cards/water_environment/abyssal_tide.png",
+         description="Basic: Heal 8 HP/turn. Water Resonance: +15 EV."),
+
+    Card("Thunderbolt Reactor", "Environment", "Lightning", 
+         "environment_cards/lightning_environment/thunderbolt_reactor.png",
+         description="Basic: +10 SPD. Electric Resonance: 30% Stun chance."),
+
+    Card("Hurricane Eye Plateau", "Environment", "Wind", 
+         "environment_cards/wind_environment/hurricane_eye.png",
+         description="Basic: +20 EV. Wind Resonance: Ignore 20% DEF."),
+
+    Card("Diamond Crag Fortress", "Environment", "Earth", 
+         "environment_cards/earth_environment/diamond_crag.png",
+         description="Basic: +20 DEF. Earth Resonance: Status Immune.")
 ]
 
 # Danh sách bài phép thuật
@@ -96,4 +118,4 @@ NEUTRAL_SPELLS = [
 
 ALL_MONSTERS = FIRE_MONSTERS + WATER_MONSTERS + LIGHTNING_MONSTERS + WIND_MONSTERS + EARTH_MONSTERS
 ALL_SPELLS = FIRE_SPELLS + WATER_SPELLS + LIGHTNING_SPELLS + WIND_SPELLS + EARTH_SPELLS + NEUTRAL_SPELLS
-FULL_DATABASE = ALL_MONSTERS + ELEMENT_CARD + ALL_SPELLS
+FULL_DATABASE = ALL_MONSTERS + ENVIRONMENT_CARD + ALL_SPELLS
