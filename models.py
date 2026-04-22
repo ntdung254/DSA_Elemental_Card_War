@@ -33,8 +33,9 @@ class Card: # Lớp đại diện cho một lá bài trong trò chơi
             board_res = pil_img.resize((160, 210), Image.LANCZOS)
             
             # Chuyển ngược lại Pygame Surface để render
-            self.image_hand = pygame.image.fromstring(hand_res.tobytes(), hand_res.size, hand_res.mode).convert_alpha()
-            self.image_board = pygame.image.fromstring(board_res.tobytes(), board_res.size, board_res.mode).convert_alpha()
+            # FIX: Sửa fromstring thành frombuffer để tương thích với Pygame 2.2+
+            self.image_hand = pygame.image.frombuffer(hand_res.tobytes(), hand_res.size, hand_res.mode).convert_alpha()
+            self.image_board = pygame.image.frombuffer(board_res.tobytes(), board_res.size, board_res.mode).convert_alpha()
             
             self.image_path = image_path 
             
@@ -49,7 +50,8 @@ class Card: # Lớp đại diện cho một lá bài trong trò chơi
 class Player: # Lớp quản lý thông tin và hành động của người chơi (HP, Deck, Hand)
     def __init__(self, deck_data): # Khởi tạo thông tin ban đầu của người chơi
         self.hp = 100 # Khởi tạo lượng máu ban đầu của người chơi là 100
-        self.deck = deck_data # Khởi tạo bộ bài ban đầu
+        # FIX: Dùng list(deck_data) để tạo bản sao, tránh việc xáo bài làm hỏng database gốc
+        self.deck = list(deck_data) 
         self.hand = [] # Khởi tạo số lượng bài trên tay là rỗng
         random.shuffle(self.deck) # Xáo bài ngay khi bắt đầu trận
 
