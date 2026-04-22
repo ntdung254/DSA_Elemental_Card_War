@@ -24,16 +24,15 @@ class Card: # Lớp đại diện cho một lá bài trong trò chơi
         self.description = description # Mô tả nội dung của bài
 
         try:
-            # SỬ DỤNG PILLOW ĐỂ RESIZE VỚI THUẬT TOÁN LANCZOS (CỰC NÉT)
+            # Sử dụng Pillow để Resize với thuật toán Lanczos
             pil_img = Image.open(image_path).convert("RGBA")
             
-            # Kích thước cho bài trên tay (Nhỏ gọn để dễ quản lý)
+            # Kích thước cho bài trên tay
             hand_res = pil_img.resize((130, 180), Image.LANCZOS)
-            # Kích thước cho bài trên bàn cờ (Lớn hơn để nhìn rõ chi tiết)
+            # Kích thước cho bài trên bàn cờ
             board_res = pil_img.resize((160, 210), Image.LANCZOS)
             
             # Chuyển ngược lại Pygame Surface để render
-            # FIX: Sửa fromstring thành frombuffer để tương thích với Pygame 2.2+
             self.image_hand = pygame.image.frombuffer(hand_res.tobytes(), hand_res.size, hand_res.mode).convert_alpha()
             self.image_board = pygame.image.frombuffer(board_res.tobytes(), board_res.size, board_res.mode).convert_alpha()
             
