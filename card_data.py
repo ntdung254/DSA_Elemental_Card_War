@@ -1,7 +1,12 @@
+"""
+Mô đun cơ sở dữ liệu thẻ bài.
+Định nghĩa và khởi tạo toàn bộ kho thẻ (Card pool) của hệ thống bao gồm: 
+Thẻ Quái vật (Monster), Thẻ Phép thuật (Spell), và Thẻ Môi trường (Environment) 
+được phân loại theo ngũ hành nguyên tố (Fire, Water, Lightning, Wind, Earth).
+"""
 from models import Card
 
-# Danh sách bài quái vật (Monster)
-
+# Monster Cards
 FIRE_MONSTERS = [
     Card("Sasuke Uchiha", "Monster", "Fire", "cards_list/fire_monster/sasuke_uchiha.png", stat_atk=30, stat_hp=15, stat_def=12, stat_spd=25, stat_eva=10, stat_cri=8),
     Card("Portgas D. Ace", "Monster", "Fire", "cards_list/fire_monster/portgas_d_ace.png", stat_atk=32, stat_hp=18, stat_def=10, stat_spd=20, stat_eva=10, stat_cri=10),
@@ -67,52 +72,73 @@ EARTH_MONSTERS = [
     Card("Superalloy Darkshine", "Monster", "Earth", "cards_list/earth_monster/superalloy_darkshine.png", stat_atk=25, stat_hp=25, stat_def=45, stat_spd=5, stat_eva=0, stat_cri=0)
 ]
 
-# Danh sách bài môi trường 
-
+# Environment Cards
 ENVIRONMENT_CARDS = [
     Card("Inferno Forge", "Environment", "Fire", 
-         "environment_cards/fire_environment/inferno_forge.png",
+         "cards_list/environment_cards/fire_environment.png",
          description="Basic: +10 ATK. Fire Resonance: +15 CRI."),
 
     Card("Abyssal Tide Basin", "Environment", "Water", 
-         "environment_cards/water_environment/abyssal_tide.png",
+         "cards_list/environment_cards/water_environment.png",
          description="Basic: Heal 8 HP/turn. Water Resonance: +15 EV."),
 
     Card("Thunderbolt Reactor", "Environment", "Lightning", 
-         "environment_cards/lightning_environment/thunderbolt_reactor.png",
+         "cards_list/environment_cards/lightning_environment.png",
          description="Basic: +10 SPD. Electric Resonance: 30% Stun chance."),
 
     Card("Hurricane Eye Plateau", "Environment", "Wind", 
-         "environment_cards/wind_environment/hurricane_eye.png",
+         "cards_list/environment_cards/wind_environment.png",
          description="Basic: +20 EV. Wind Resonance: Ignore 20% DEF."),
 
     Card("Diamond Crag Fortress", "Environment", "Earth", 
-         "environment_cards/earth_environment/diamond_crag.png",
+         "cards_list/environment_cards/earth_environment.png",
          description="Basic: +20 DEF. Earth Resonance: Status Immune.")
 ]
 
-# Danh sách bài phép thuật
-
+# Spell Cards
 FIRE_SPELLS = [
+    Card("Flame Rage", "Spell", "Fire", "cards_list/fire_spell/flame_rage.png", description="+15 ATK to 1 allied monster for 2 turns"),
+    Card("Inferno Shot", "Spell", "Fire", "cards_list/fire_spell/inferno_shot.png", description="Deal 30 damage to 1 enemy monster"),
+    Card("Burning Spirit", "Spell", "Fire", "cards_list/fire_spell/burning_spirit.png", description="Heal 25 HP to 1 allied monster. +10 ATK for 1 turn"),
+    Card("Meteor Collapse", "Spell", "Fire", "cards_list/fire_spell/meteor_collapse.png", description="Deal 15 damage to all enemy monsters"),
+    Card("Phoenix Rebirth", "Spell", "Fire", "cards_list/fire_spell/phoenix_rebirth.png", description="Revive 1 allied monster with 50% HP")
 ]
 
 WATER_SPELLS = [
+    Card("Aqua Shield", "Spell", "Water", "cards_list/water_spell/aqua_shield.png", description="+20 DEF to 1 allied monster for 2 turns"),
+    Card("Tidal Impact", "Spell", "Water", "cards_list/water_spell/tidal_impact.png", description="Deal 25 damage to 1 enemy monster"),
+    Card("Healing Rain", "Spell", "Water", "cards_list/water_spell/healing_rain.png", description="Heal 20 HP to all allied monsters"),
+    Card("Frozen Heart", "Spell", "Water", "cards_list/water_spell/frozen_heart.png", description="Reduce 15 ATK and 15 SPD of 1 enemy monster"),
+    Card("Ocean Blessing", "Spell", "Water", "cards_list/water_spell/ocean_blessing.png", description="Draw 2 cards. Heal player by 20 LP")
 ]
 
 LIGHTNING_SPELLS = [
+    Card("Thunder Strike", "Spell", "Lightning", "cards_list/lightning_spell/thunder_strike.png", description="Deal 30 damage to 1 enemy monster"),
+    Card("Overcharge", "Spell", "Lightning", "cards_list/lightning_spell/overcharge.png", description="+20 SPD and +10 ATK to 1 allied monster"),
+    Card("Chain Lightning", "Spell", "Lightning", "cards_list/lightning_spell/chain_lightning.png", description="Deal 15 damage to all enemy monsters"),
+    Card("Electric Drain", "Spell", "Lightning", "cards_list/lightning_spell/electric_drain.png", description="Reduce 20 DEF of 1 enemy monster"),
+    Card("Final Judgement", "Spell", "Lightning", "cards_list/lightning_spell/final_judgement.png", description="Deal 50 damage to enemy player")
 ]
 
 WIND_SPELLS = [
+    Card("Sonic Speed", "Spell", "Wind", "cards_list/wind_spell/sonic_speed.png", description="+25 SPD to 1 allied monster"),
+    Card("Air Cutter", "Spell", "Wind", "cards_list/wind_spell/air_cutter.png", description="Deal 25 damage to 1 enemy monster"),
+    Card("Sky Dance", "Spell", "Wind", "cards_list/wind_spell/sky_dance.png", description="+20 EVA to all allied monsters"),
+    Card("Storm Pressure", "Spell", "Wind", "cards_list/wind_spell/storm_pressure.png", description="Reduce 15 SPD of all enemy monsters"),
+    Card("Wind Blessing", "Spell", "Wind", "cards_list/wind_spell/wind_blessing.png", description="Draw 2 cards")
 ]
 
 EARTH_SPELLS = [
+    Card("Stone Armor", "Spell", "Earth", "cards_list/earth_spell/stone_armor.png", description="+25 DEF to 1 allied monster"),
+    Card("Earth Crusher", "Spell", "Earth", "cards_list/earth_spell/earth_crusher.png", description="Deal 30 damage to 1 enemy monster"),
+    Card("Gaia Blessing", "Spell", "Earth", "cards_list/earth_spell/gaia_blessing.png", description="Heal 30 HP to 1 allied monster"),
+    Card("Mountain Pressure", "Spell", "Earth", "cards_list/earth_spell/mountain_pressure.png", description="Reduce 20 ATK of all enemy monsters"),
+    Card("Ancient Revival", "Spell", "Earth", "cards_list/earth_spell/ancient_revival.png", description="Revive 1 allied monster with 40% HP")
 ]
 
-NEUTRAL_SPELLS = [
-]
+NEUTRAL_SPELLS = []
 
-# Tổng hợp Data
-
+# All Data
 ALL_MONSTERS = FIRE_MONSTERS + WATER_MONSTERS + LIGHTNING_MONSTERS + WIND_MONSTERS + EARTH_MONSTERS
 ALL_SPELLS = FIRE_SPELLS + WATER_SPELLS + LIGHTNING_SPELLS + WIND_SPELLS + EARTH_SPELLS + NEUTRAL_SPELLS
 FULL_DATABASE = ALL_MONSTERS + ENVIRONMENT_CARDS + ALL_SPELLS
