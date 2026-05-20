@@ -22,10 +22,6 @@ from card_data import (
 )
 
 def build_custom_deck():
-    """
-    Tạo và cấu hình một bộ bài hoàn chỉnh ngẫu nhiên cho người chơi, 
-    đảm bảo sự cân bằng về số lượng giữa các nguyên tố và loại thẻ bài.
-    """
     deck = []
     deck.extend([copy.copy(c) for c in random.sample(FIRE_MONSTERS, 6)])
     deck.extend([copy.copy(c) for c in random.sample(WATER_MONSTERS, 6)])
@@ -43,10 +39,6 @@ def build_custom_deck():
     return deck
 
 def clone_board(original_board):
-    """
-    Sao chép sâu (deep copy) trạng thái bàn cờ hiện tại. 
-    Hỗ trợ cơ chế dự đoán trạng thái và phân tách dữ liệu đồ họa (display_board) khỏi dữ liệu logic cốt lõi.
-    """
     new_board = Board()
     new_board.player_slots = [copy.copy(card) if card else None for card in original_board.player_slots]
     new_board.bot_slots = [copy.copy(card) if card else None for card in original_board.bot_slots]
@@ -55,10 +47,6 @@ def clone_board(original_board):
     return new_board
 
 def queue_card_draw(card, side, hand_len):
-    """
-    Tính toán quỹ đạo và lưu trữ thông tin cần thiết để khởi tạo hiệu ứng Rút bài (Draw Card animation) 
-    từ bộ bài (Deck) về tay người chơi (Hand).
-    """
     if side == 'PLAYER':
         start_pos = (WIDTH - 348, HEIGHT - 118)
         end_pos = ((WIDTH - (hand_len * 120 + 130)) // 2 + hand_len * 120, 920)
@@ -68,11 +56,6 @@ def queue_card_draw(card, side, hand_len):
     return {'card': card, 'side': side, 'start': start_pos, 'end': end_pos, 'prog': 0.0}
 
 def process_board_deaths(board, player, bot, anim):
-    """
-    Quét liên tục trạng thái trên bàn cờ để phát hiện các thực thể có HP <= 0.
-    Kích hoạt hoạt ảnh tan biến (Death animation) và xử lý việc di chuyển thẻ bài vào Mộ bài (Graveyard).
-    Trả về cờ (boolean) báo hiệu xem có đang xử lý hoạt ảnh tan biến nào không.
-    """
     animating = False
     for i in range(4):
         c_p = board.player_slots[i]
@@ -93,10 +76,6 @@ def process_board_deaths(board, player, bot, anim):
     return animating
 
 def menu_state(clock):
-    """
-    Quản lý vòng lặp sự kiện và kết xuất đồ họa cho màn hình Menu chính (Main Menu).
-    Xử lý các thao tác điều hướng sang chế độ chơi Solo, trực tuyến (Online), hoặc Thoát ứng dụng.
-    """
     try: bg_menu = pygame.transform.scale(pygame.image.load('assets/graphic/menu_bg.png').convert(), (WIDTH, HEIGHT))
     except: bg_menu = None
     
@@ -140,10 +119,6 @@ def menu_state(clock):
         pygame.display.flip(); clock.tick(FPS)
 
 def online_menu_state(clock):
-    """
-    Quản lý vòng lặp tương tác cho Chế độ trực tuyến (Online Multiplayer).
-    Cho phép nhập IP cấu hình kết nối mạng thông qua TCP socket (Đóng vai trò Host hoặc Client).
-    """
     font_sys = pygame.font.SysFont("Verdana", 40, bold=True)
     try: font_ip = pygame.font.Font("assets/font/FrizQuadrata.ttf", 32)
     except: font_ip = pygame.font.SysFont("Arial", 32, bold=True)
@@ -220,22 +195,16 @@ def online_menu_state(clock):
         pygame.display.flip(); clock.tick(FPS)
 
 def _trigger_spell_overlays(action, board, anim):
-    """
-    Kích hoạt hiệu ứng overlay plus/mul trên các ô bài bị tác dụng bởi spell.
-    Buff/heal -> plus.png; Damage/debuff -> mul.png
-    """
     name = action["card"].name
     c_side = action.get("side", "PLAYER")
     t_idx = action.get("target")
     t_side = action.get("target_side", "BOT")
     
-    # Spell gây damage hoặc debuff -> mul
     damage_spells = {"Inferno Shot", "Tidal Impact", "Thunder Strike", "Air Cutter", "Earth Crusher",
                      "Frozen Heart", "Electric Drain", "Final Judgement"}
     aoe_damage_spells = {"Meteor Collapse", "Chain Lightning"}
     aoe_debuff_spells = {"Storm Pressure", "Mountain Pressure"}
     
-    # Spell buff/heal -> plus
     buff_spells = {"Flame Rage", "Aqua Shield", "Overcharge", "Sonic Speed", "Stone Armor",
                    "Burning Spirit", "Gaia Blessing", "Sky Dance"}
     aoe_heal_spells = {"Healing Rain"}
@@ -272,37 +241,28 @@ def _trigger_spell_overlays(action, board, anim):
             if ally_slots[i]:
                 anim.start_spell_overlay(f'{ap}{i}', 'plus')
 
-
 def play_state(clock, net=None):
-    """
-    Vòng lặp nghiệp vụ chính (Main Game Loop).
-    Quản lý luồng thực thi liên tục thông qua Cỗ máy trạng thái trận đấu (Game Phases) bao gồm: 
-    Rút bài đầu game (INIT_DRAW), Người chơi bố trí (PLAYER_SETUP), 
-    Máy bố trí (BOT_SETUP), Tiết lộ hành động (REVEAL), Giao tranh (BATTLE) và Dọn dẹp (CLEANUP).
-    Xử lý đồng bộ hóa logic Engine và hệ thống UI/Animation.
-    """
     anim = AnimationManager()
     main_surface = pygame.Surface((WIDTH, HEIGHT))
     
     if net and net.is_host:
         p_deck, b_deck = build_custom_deck(), build_custom_deck()
-        net.send_data({'type': 'init_decks', 'p1': p_deck, 'p2': b_deck})
+        shared_seed = random.randint(0, 999999)
+        GameEngine.combat_random = random.Random(shared_seed)
+        net.send_data({'type': 'init_decks', 'p1': p_deck, 'p2': b_deck, 'seed': shared_seed})
         player, bot = Player(p_deck), Player(b_deck)
     elif net and not net.is_host:
         player, bot = Player([]), Player([])
         waiting_decks = True
-        
         fonts_temp = {'large': pygame.font.SysFont("Verdana", 32, bold=True)}
         
         while waiting_decks:
-            # Xử lý sự kiện để tránh Client bị Not Responding
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     if net: net.close()
                     pygame.quit()
                     sys.exit()
             
-            # Cập nhật màn hình loading cho Client
             main_surface.fill((15, 20, 30))
             ui.draw_text_centered(main_surface, "WAITING FOR HOST TO SEND DECKS...", fonts_temp['large'], (255, 255, 0), (WIDTH//2 - 300, HEIGHT//2 - 50, 600, 100))
             screen.blit(main_surface, (0, 0))
@@ -311,11 +271,13 @@ def play_state(clock, net=None):
             
             data = net.get_data()
             if data and data.get('type') == 'init_decks':
+                GameEngine.combat_random = random.Random(data['seed']) 
                 player.deck = data['p2']
                 bot.deck = data['p1'] 
                 waiting_decks = False
     else:
         player, bot = Player(build_custom_deck()), Player(build_custom_deck())
+        GameEngine.combat_random = random.Random()
         
     board = Board()
     player.pending_spells, bot.pending_spells = [], [] 
@@ -327,10 +289,8 @@ def play_state(clock, net=None):
     
     ICONS = {}
     for el in ui.ALL_ELEMENTS:
-        try:
-            ICONS[el.lower()] = pygame.image.load(f'assets/element_icon/{el.lower()}.png').convert_alpha()
-        except: 
-            t = pygame.Surface((30, 30)); t.fill((100,100,100)); ICONS[el.lower()] = t
+        try: ICONS[el.lower()] = pygame.image.load(f'assets/element_icon/{el.lower()}.png').convert_alpha()
+        except: t = pygame.Surface((30, 30)); t.fill((100,100,100)); ICONS[el.lower()] = t
 
     try:
         bg_img = pygame.transform.scale(pygame.image.load('assets/graphic/background.png').convert(), (WIDTH, HEIGHT))
@@ -342,7 +302,7 @@ def play_state(clock, net=None):
         'viewing_grave': None, 'revival_card': None, 'is_discarding': False,
         'draw_queue': [], 'current_draw': None, 'spell_anim': None, 'setup_anim': None,
         'hover_offsets': {}, 'endgame_scale': 0.0, 'grave_scale': 0.0,
-        'buffered_actions': None  # --- THÊM BỘ ĐỆM ĐỂ GIỮ GÓI TIN MẠNG NẾU ĐỐI THỦ GỬI SỚM ---
+        'buffered_actions': None 
     }
 
     game_phase = "INIT_DRAW"
@@ -355,12 +315,10 @@ def play_state(clock, net=None):
         curr_time = pygame.time.get_ticks(); mx, my = pygame.mouse.get_pos()
         ui.draw_background(main_surface, bg_img)
         
-        if player.display_hp > player.hp:
-            player.display_hp -= max(0.2, (player.display_hp - player.hp) * 0.05)
+        if player.display_hp > player.hp: player.display_hp -= max(0.2, (player.display_hp - player.hp) * 0.05)
         elif player.display_hp < player.hp: player.display_hp = player.hp
         
-        if bot.display_hp > bot.hp:
-            bot.display_hp -= max(0.2, (bot.display_hp - bot.hp) * 0.05)
+        if bot.display_hp > bot.hp: bot.display_hp -= max(0.2, (bot.display_hp - bot.hp) * 0.05)
         elif bot.display_hp < bot.hp: bot.display_hp = bot.hp
 
         impacts = anim.update()
@@ -369,12 +327,10 @@ def play_state(clock, net=None):
             if def_ent: anim.start_entity_shake(def_ent, 15, 8)
 
         if game_phase not in ["ENDGAME", "INIT_DRAW"] and (player.hp <= 0 or bot.hp <= 0):
-            # Chờ animation tấn công xong và máu hiển thị xuống 0 trước khi hiện endgame
             hp_anim_done = (player.hp <= 0 and player.display_hp <= 1) or (bot.hp <= 0 and bot.display_hp <= 1)
             no_combat_anim = len(anim.combat_anims) == 0
             if hp_anim_done and no_combat_anim:
-                if not ui_state.get('endgame_pending'):
-                    ui_state['endgame_pending'] = curr_time
+                if not ui_state.get('endgame_pending'): ui_state['endgame_pending'] = curr_time
                 elif curr_time - ui_state['endgame_pending'] >= 1000:
                     game_phase = "ENDGAME"; endgame_timer = curr_time
                     ui_state['endgame_scale'] = 0.0
@@ -387,26 +343,28 @@ def play_state(clock, net=None):
                 ui_state['current_draw'] = None
         elif ui_state['draw_queue']: ui_state['current_draw'] = ui_state['draw_queue'].pop(0)
 
-        # --- BẢN FIX: TÁCH RIÊNG KHÂU LẤY NETWORK DATA VÀ LƯU VÀO BỘ ĐỆM ---
         if net:
             net_data = net.get_data()
             if net_data:
-                # Bất kể đang ở State nào, nếu nhận được data turn thì cất vào Buffer
                 if net_data['type'] == 'turn_actions':
                     ui_state['buffered_actions'] = net_data['actions']
-
-        # --- BẢN FIX: KHÂU CHUYỂN PHA WAIT -> REVEAL TỪ BỘ ĐỆM ---
+                    
         if game_phase == "WAITING_OPPONENT" and ui_state.get('buffered_actions') is not None:
             bot_actions_queue = ui_state['buffered_actions']
-            ui_state['buffered_actions'] = None # Dọn đệm sau khi dùng
+            ui_state['buffered_actions'] = None
             
             for a in bot_actions_queue:
                 a["side"] = "BOT"
                 if "target_side" in a:
                     if a["target_side"] == "BOT": a["target_side"] = "PLAYER"
                     elif a["target_side"] == "PLAYER": a["target_side"] = "BOT"
-                    
-            reveal_queue = player_actions_queue + bot_actions_queue
+            
+            # ---> BẢN VÁ 1: ĐỒNG BỘ THỨ TỰ RA BÀI (HOST LUÔN LẬT TRƯỚC) <---
+            if net and not net.is_host:
+                # Nếu là Client, bài của Bot (tức là bài của Host) sẽ được thêm vào trước
+                reveal_queue = bot_actions_queue + player_actions_queue
+            else:
+                reveal_queue = player_actions_queue + bot_actions_queue
             
             for a in reveal_queue[:]:
                 if a["type"] == "SUMMON":
@@ -421,12 +379,9 @@ def play_state(clock, net=None):
             display_board = clone_board(board)
 
         if game_phase == "ENDGAME":
-            if ui_state.get('endgame_scale', 0.0) < 1.0:
-                ui_state['endgame_scale'] = min(1.0, ui_state.get('endgame_scale', 0.0) + 0.04)
-
+            if ui_state.get('endgame_scale', 0.0) < 1.0: ui_state['endgame_scale'] = min(1.0, ui_state.get('endgame_scale', 0.0) + 0.04)
             ui.draw_endgame_screen(main_surface, bot.hp <= 0, fonts, ui_state.get('endgame_scale', 1.0))
             screen.blit(main_surface, (0, 0))
-            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: 
                     if net: net.close()
@@ -467,7 +422,6 @@ def play_state(clock, net=None):
                 bot_actions_queue = GameEngine.bot_ai_turn(bot, board)
                 for a in bot_actions_queue: a["side"] = "BOT"
                 reveal_queue = player_actions_queue + bot_actions_queue
-                
                 for a in reveal_queue[:]:
                     if a["type"] == "SUMMON":
                         side_char = 'p' if a.get("side", "PLAYER") == "PLAYER" else 'b'
@@ -499,11 +453,8 @@ def play_state(clock, net=None):
                             t_card = board.player_slots[t_idx] if action.get("target_side") == "PLAYER" else board.bot_slots[t_idx]
                             
                         GameEngine.execute_spell(action["card"], target_card=t_card, caster_player=c_player, enemy_player=e_player, board=board, caster_side=c_side)
-                        
-                        # Trigger spell overlays (plus/mul) trên các ô bị ảnh hưởng
                         _trigger_spell_overlays(action, board, anim)
                         
-                        # Queue draw animations nếu spell rút bài (đã bỏ rút trong execute_spell)
                         spell_name = action["card"].name
                         if spell_name in ["Ocean Blessing", "Wind Blessing"]:
                             draw_side = 'PLAYER' if c_side == 'PLAYER' else 'BOT'
@@ -559,8 +510,7 @@ def play_state(clock, net=None):
 
                         if action["type"] == "ENV" and side_char == 'p':
                             old_env = board.player_env[action["target"]]
-                            if old_env:
-                                player.env_milestones[old_env] = max(0, player.env_milestones.get(old_env, 0) - 1)
+                            if old_env: player.env_milestones[old_env] = max(0, player.env_milestones.get(old_env, 0) - 1)
                             board.player_env[action["target"]] = action["card"].element
                             c = action["card"]
                             if c in player.pending_spells:
@@ -573,6 +523,16 @@ def play_state(clock, net=None):
 
                         elif action["type"] == "SPELL":
                             ui_state['spell_anim'] = {'card': action['card'], 'prog': 0, 'action': action}
+                            
+                        elif action["type"] == "DISCARD":
+                            c = action["card"]
+                            if side_char == 'p':
+                                player.graveyard.append(c)
+                            else:
+                                if c in bot.hand:
+                                    bot.hand.remove(c)
+                                bot.graveyard.append(c)
+                            action_timer = curr_time
                             
                         display_board = clone_board(board) 
                     else:
@@ -593,8 +553,20 @@ def play_state(clock, net=None):
                                 p_stats = GameEngine.calculate_stats(p_card, board.player_env[slot], player.env_milestones) if p_card else None
                                 b_stats = GameEngine.calculate_stats(b_card, board.bot_env[slot], bot.env_milestones) if b_card else None
                                 if p_card and b_card:
-                                    if p_stats['spd'] >= b_stats['spd']: combat_state['order'] = [('p', p_card, p_stats, b_card, b_stats), ('b', b_card, b_stats, p_card, p_stats)]
-                                    else: combat_state['order'] = [('b', b_card, b_stats, p_card, p_stats), ('p', p_card, p_stats, b_card, b_stats)]
+                                    # ---> BẢN VÁ 2: ĐỒNG BỘ ƯU TIÊN KHI BẰNG TỐC ĐỘ (HOST LUÔN ĐÁNH TRƯỚC) <---
+                                    p_first = False
+                                    if p_stats['spd'] > b_stats['spd']:
+                                        p_first = True
+                                    elif p_stats['spd'] == b_stats['spd']:
+                                        if net and not net.is_host:
+                                            p_first = False  # Client tự nhường quyền ưu tiên cho Host
+                                        else:
+                                            p_first = True   # Host (hoặc chế độ chơi Solo) luôn được ưu tiên
+                                            
+                                    if p_first: 
+                                        combat_state['order'] = [('p', p_card, p_stats, b_card, b_stats), ('b', b_card, b_stats, p_card, p_stats)]
+                                    else: 
+                                        combat_state['order'] = [('b', b_card, b_stats, p_card, p_stats), ('p', p_card, p_stats, b_card, b_stats)]
                                 elif p_card: combat_state['order'] = [('p_direct', p_card, p_stats)]
                                 elif b_card: combat_state['order'] = [('b_direct', b_card, b_stats)]
                                 combat_state['step'] = 1
@@ -628,7 +600,8 @@ def play_state(clock, net=None):
                 if c_b: ui_state['draw_queue'].append(queue_card_draw(c_b, 'BOT', len(bot.hand)))
                 
                 if len(player.hand) > 6: ui_state['is_discarding'] = True
-                if len(bot.hand) > 6: bot.graveyard.append(bot.hand.pop(random.randint(0, len(bot.hand)-1)))
+                if len(bot.hand) > 6:
+                    if not net: bot.graveyard.append(bot.hand.pop(random.randint(0, len(bot.hand)-1)))
                 
                 player_actions_queue.clear(); bot_actions_queue.clear()
                 display_board = clone_board(board); game_phase = "WAIT_CLEANUP_DRAW"
@@ -712,7 +685,9 @@ def play_state(clock, net=None):
                         start_x = (WIDTH - ((len(player.hand) - 1) * 120 + 130)) // 2
                         for i, card in enumerate(player.hand):
                             if pygame.Rect(start_x + i * 120, 920, 130, 180).collidepoint(mx, my):
-                                player.graveyard.append(player.hand.pop(i)); ui_state['is_discarding'] = False; break
+                                discarded = player.hand.pop(i)
+                                player_actions_queue.append({"type": "DISCARD", "card": discarded, "side": "PLAYER"})
+                                ui_state['is_discarding'] = False; break
                         continue
                         
                     if hex_hover:
