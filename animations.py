@@ -23,6 +23,8 @@ class AnimationManager:
         self.summon_anims = {}
         self.global_shake = {'timer': 0, 'intensity': 0}
         self.red_flash_alpha = 0
+        # spell_overlays: {slot_key: {'type': 'plus'/'mul', 'alpha': 255}}
+        self.spell_overlays = {}
         
     def start_attack_bump(self, entity, target_entity, target_y_dir):
         """
@@ -54,6 +56,13 @@ class AnimationManager:
         Thiết lập hiệu ứng rung lắc cục bộ cho một thực thể (thường do chịu tác động vật lý).
         """
         self.entity_shakes[entity] = {'timer': duration, 'intensity': intensity}
+
+    def start_spell_overlay(self, slot_key, overlay_type):
+        """
+        Bắt đầu hiệu ứng overlay ảnh plus/mul đè lên ô bài được tác dụng bởi spell.
+        overlay_type: 'plus' hoặc 'mul'. Hiện 0.5s (30 frames) rồi mờ dần.
+        """
+        self.spell_overlays[slot_key] = {'type': overlay_type, 'alpha': 255, 'timer': 30}
 
     # Đã thêm cờ flash_red để chỉ báo nháy đỏ khi bị tấn công
     def start_global_shake(self, duration=20, intensity=15, flash_red=True):
@@ -95,6 +104,14 @@ class AnimationManager:
         for ent, sh in list(self.entity_shakes.items()):
             if sh['timer'] > 0: sh['timer'] -= 1
             else: del self.entity_shakes[ent]
+
+        for slot_key, ov in list(self.spell_overlays.items()):
+            if ov['timer'] > 0:
+                ov['timer'] -= 1
+            else:
+                ov['alpha'] -= 8
+                if ov['alpha'] <= 0:
+                    del self.spell_overlays[slot_key]
             
         if self.global_shake['timer'] > 0:
             self.global_shake['timer'] -= 1
@@ -156,6 +173,16 @@ class AnimationManager:
         Lấy giá trị độ mờ (alpha channel, 0-255) cho hoạt ảnh nhấp nháy của thực thể.
         """
         return int(self.flash_anims.get(entity, 0) * 255)
+
+    def get_spell_overlay(self, slot_key):
+        """
+        Lấy thông tin overlay spell (type, alpha) cho một ô bài cụ thể.
+        Trả về None nếu không có overlay nào đang hoạt động.
+        """
+        ov = self.spell_overlays.get(slot_key)
+        if ov:
+            return ov['type'], max(0, min(255, ov['alpha']))
+        return None
 
     def get_blink(self, current_time, speed=0.005):
         """
