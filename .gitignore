@@ -1,0 +1,44 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+.venv/
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python build files
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# Pygame temporary files
+*.bak
+
+# Cache
+.cache/
+
+# PyInstaller
+*.spec
+
+# Save files
+saves/
+userdata/
+
+# Network temporary data
+*.tmp
+
+# Ignore large local assets if needed
+# assets/raw/
