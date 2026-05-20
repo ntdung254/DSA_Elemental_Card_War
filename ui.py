@@ -28,7 +28,7 @@ def get_asset(name, size=None, radius=0):
     key = (name, size, radius)
     if key not in _ASSETS:
         try:
-            img = pygame.image.load(f"assets/{name}.png").convert_alpha()
+            img = pygame.image.load(f"assets/graphic/{name}.png").convert_alpha()
             if size: img = pygame.transform.smoothscale(img, size)
             if radius > 0:
                 mask = pygame.Surface(img.get_size(), pygame.SRCALPHA)
@@ -342,47 +342,131 @@ def draw_board(surface, board, targeting_mode, blink_val, icons, anim, attacking
             fs = pygame.Surface((slot_w, slot_h), pygame.SRCALPHA); fs.fill((255, 255, 255, flash_alpha))
             surface.blit(fs, (base_x, base_y))
 
+        spell_ov = anim.get_spell_overlay(f'{entity_prefix}{i}')
+        if spell_ov:
+            ov_type, ov_alpha = spell_ov
+            ov_img = get_asset(ov_type, (slot_w, slot_h))
+            if ov_img:
+                ov_render = ov_img.copy()
+                ov_render.set_alpha(ov_alpha)
+                surface.blit(ov_render, (base_x, base_y))
+            else:
+                ov_color = (80, 255, 80, ov_alpha) if ov_type == 'plus' else (255, 80, 80, ov_alpha)
+                ov_surf = pygame.Surface((slot_w, slot_h), pygame.SRCALPHA)
+                ov_surf.fill(ov_color)
+                surface.blit(ov_surf, (base_x, base_y))
+
     for i in range(4):
         render_slot(i, board.bot_slots, board.bot_env, 550 + i*222, 200, 'b')
         render_slot(i, board.player_slots, board.player_env, 550 + i*222, 622, 'p')
 
-def draw_zoom_panel(surface, inspect_data, x, y, fonts):
+
+def draw_zoom_panel(surface, inspect_data, x, y, fonts, panel_w=880, panel_h=2700, badge_w=220, badge_h=120,
+                    badge_dx=0, badge_dy=0,       # Dịch chuyển nhãn (badge)
+                    card_dx=0, card_dy=0,         # Dịch chuyển ảnh lá bài
+                    name_dx=0, name_dy=0,         # Dịch chuyển chữ Tên lá bài
+                    stats_dx=0, stats_dy=0,       # Dịch chuyển bảng chỉ số/mô tả
+                    num_columns=2, col_gap=40, row_gap=65):
     """
-    Khởi tạo và render một Cửa sổ Thông tin chi tiết (Inspect Panel) ở phía bên phải.
-    Phân tích trực tiếp các thuộc tính của thẻ và báo cáo bộ chỉ số chi tiết của nó
-    với sự hiệu đính từ các mức độ cộng hưởng trên sân đấu.
+    Cửa sổ Thông tin chi tiết (Inspect Panel). 
     """
-    if isinstance(inspect_data, dict): card, milestones, board_env = inspect_data['card'], inspect_data.get('milestones', {}), inspect_data.get('board_env', None)
-    else: card, milestones, board_env = inspect_data, {}, None
+    if isinstance(inspect_data, dict):
+        card, milestones, board_env = inspect_data['card'], inspect_data.get('milestones', {}), inspect_data.get('board_env', None)
+    else:
+        card, milestones, board_env = inspect_data, {}, None
+
     px, py = x, y
+
+    # --- Background panel: graphic/info.png ---
+    info_bg = get_asset('info', (panel_w, panel_h))
+    if info_bg:
+        surface.blit(info_bg, (px, py))
+    else:
+        pygame.draw.rect(surface, (15, 18, 25), (px, py, panel_w, panel_h), 0, 20)
+        pygame.draw.rect(surface, (100, 100, 120), (px, py, panel_w, panel_h), 2, 20)
+
+    # --- Các tọa độ gốc mặc định (Base Coordinates) ---
+    base_badge_y = py + 20
+    base_img_y = base_badge_y + badge_h + 30
+    IMG_W, IMG_H = 400, 530
+    base_name_y = base_img_y + IMG_H + 30
+    base_stats_y = base_name_y + 48 + 30
+
+    # --- Type badge (Áp dụng dịch chuyển badge_dx, badge_dy) ---
+    badge_x = px + (panel_w - badge_w) // 2 + badge_dx
+    badge_y = base_badge_y + badge_dy
+    badge_name = card.card_type.lower()
+    badge_img = get_asset(badge_name, (badge_w, badge_h))
     
-    label_w, label_h = 240, 55; label_rect = pygame.Rect(px - label_w - 25, py + 20, label_w, label_h)
-    type_colors = {"Monster": (180, 50, 50), "Spell": (50, 100, 180), "Environment": (50, 150, 50)}
-    pygame.draw.rect(surface, type_colors.get(card.card_type, (100, 100, 100)), label_rect, 0, 12)
-    pygame.draw.rect(surface, (255, 255, 255), label_rect, 2, 12)
-    draw_text_centered(surface, card.card_type.upper(), fonts['small'], (255, 255, 255), label_rect)
+    if badge_img:
+        surface.blit(badge_img, (badge_x, badge_y))
+    else:
+        type_colors = {"Monster": (180, 50, 50), "Spell": (50, 100, 180), "Environment": (50, 150, 50)}
+        badge_rect = pygame.Rect(badge_x, badge_y, badge_w, badge_h)
+        pygame.draw.rect(surface, type_colors.get(card.card_type, (100, 100, 100)), badge_rect, 0, 12)
+        pygame.draw.rect(surface, (255, 255, 255), badge_rect, 2, 12)
+        draw_text_centered(surface, card.card_type.upper(), fonts['small'], (255, 255, 255), badge_rect)
 
-    pygame.draw.rect(surface, (15, 18, 25), (px, py, 420, 900), 0, 20); pygame.draw.rect(surface, (100, 100, 120), (px, py, 420, 900), 2, 20)
-    surface.blit(card.image_zoom, (px+10, py+10))
-    pygame.draw.rect(surface, (200, 200, 200), (px+10, py+10, 400, 530), 2, 35)
-    draw_text_centered(surface, card.name.upper(), fonts['large'], (0, 255, 255), (px+10, py+560, 400, 40))
+    # --- Card image (Áp dụng dịch chuyển card_dx, card_dy) ---
+    img_x = px + (panel_w - IMG_W) // 2 + card_dx
+    img_y = base_img_y + card_dy
+    surface.blit(card.image_zoom, (img_x, img_y))
+    pygame.draw.rect(surface, (200, 200, 200), (img_x, img_y, IMG_W, IMG_H), 2, 35)
 
+    # --- Card name (Áp dụng dịch chuyển name_dx, name_dy) ---
+    COLOR_HP_TEXT = (231, 215, 165)
+    COLOR_HP_OUTLINE = (58, 43, 26)
+    name_rect = pygame.Rect(px + name_dx, base_name_y + name_dy, panel_w, 48)  
+    draw_text_with_outline(surface, card.name.upper(), fonts['hp'], COLOR_HP_TEXT, COLOR_HP_OUTLINE, name_rect)
+
+    # --- Stats / Description (Áp dụng dịch chuyển stats_dx, stats_dy) ---
+    start_y = base_stats_y + stats_dy
     if card.card_type == "Monster":
         stats = card.get_current_stats(milestones, board_env)
         stat_names = [("ATK", "atk"), ("DEF", "def"), ("HP", "hp"), ("SPD", "spd"), ("EVA", "eva"), ("CRI", "cri")]
+        
+        # BẢN FIX: Cố định độ rộng mỗi ô chứa chữ để col_gap hoạt động rõ ràng
+        # 160 pixel là độ rộng vừa vặn cho các chỉ số
+        cell_w = 160  
+        total_grid_w = num_columns * cell_w + (num_columns - 1) * col_gap
+        
+        # Tính điểm bắt đầu X để căn giữa toàn bộ khối chỉ số
+        grid_start_x = px + (panel_w - total_grid_w) // 2 + stats_dx
+        
         for i, (label, key) in enumerate(stat_names):
-            col, row = i % 2, i // 2
-            sx, sy = px + 60 + col * 160, py + 640 + row * 60
-            if key == "hp": txt_surf = fonts['large'].render(f"HP: {int(stats['hp']['current'])}/{int(stats['hp']['max'])}", True, (255, 255, 255))
+            col_idx = i % num_columns
+            row_idx = i // num_columns
+            
+            # Vị trí X giờ phụ thuộc hoàn toàn vào col_gap và cell_w cố định
+            sx = grid_start_x + col_idx * (cell_w + col_gap)
+            sy = start_y + row_idx * row_gap
+            
+            stat_rect = pygame.Rect(sx, sy, cell_w, 60)
+            
+            if key == "hp":
+                txt = f"HP: {int(stats['hp']['current'])}/{int(stats['hp']['max'])}"
+                draw_text_with_outline(surface, txt, fonts['hp'], COLOR_HP_TEXT, COLOR_HP_OUTLINE, stat_rect)
             else:
                 base, curr = stats[key]['base'], stats[key]['current']
-                if curr > base: color = (50, 255, 50)
-                elif curr < base: color = (255, 50, 50)
-                else: color = (170, 170, 170)
-                txt_surf = fonts['large'].render(f"{label}: {int(curr)}", True, color)
-            surface.blit(txt_surf, (sx, sy))
+                if curr > base:   val_color = (100, 255, 100)
+                elif curr < base: val_color = (255, 100, 100)
+                else:             val_color = COLOR_HP_TEXT
+                txt = f"{label}: {int(curr)}"
+                draw_text_with_outline(surface, txt, fonts['hp'], val_color, COLOR_HP_OUTLINE, stat_rect)
     else:
-        draw_text_centered(surface, card.description, fonts['small'], (200, 200, 200), pygame.Rect(px+20, py+620, 380, 200))
+        # Spell/Environment description
+        desc_rect = pygame.Rect(px + stats_dx, start_y, panel_w, 200)
+        lines = card.description.split('. ') if card.description else []
+        line_y = desc_rect.y
+        for line in lines:
+            if not line: continue
+            txt_surf = fonts['small'].render(line.strip(), True, COLOR_HP_TEXT)
+            cx = px + (panel_w - txt_surf.get_width()) // 2 + stats_dx
+            for ox, oy in [(-1,-1), (-1,1),(1,-1),(1,1)]:
+                o_surf = fonts['small'].render(line.strip(), True, COLOR_HP_OUTLINE)
+                surface.blit(o_surf, (cx + ox, line_y + oy))
+            surface.blit(txt_surf, (cx, line_y))
+            line_y += fonts['small'].get_linesize() + 10
 
 def draw_grave_viewer(surface, graveyard, fonts, scale=1.0):
     """
