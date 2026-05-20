@@ -11,7 +11,8 @@ SPELL_TYPES = {
     "Frozen Heart": "ENEMY", "Electric Drain": "ENEMY",
     "Meteor Collapse": "GLOBAL", "Chain Lightning": "GLOBAL", "Healing Rain": "GLOBAL", "Sky Dance": "GLOBAL", "Storm Pressure": "GLOBAL", "Mountain Pressure": "GLOBAL",
     "Final Judgement": "GLOBAL", "Ocean Blessing": "GLOBAL", "Wind Blessing": "GLOBAL",
-    "Ancient Revival": "GRAVE_ALLY"
+    "Ancient Revival": "GRAVE_ALLY",
+    "Phoenix Rebirth": "GRAVE_ALLY"
 }
 
 class GameEngine:
@@ -105,10 +106,8 @@ class GameEngine:
         if name == "Final Judgement" and enemy_player: enemy_player.hp -= 50
         if name == "Ocean Blessing" and caster_player: caster_player.hp += 20
         
-        if name in ["Ocean Blessing", "Wind Blessing"] and caster_player:
-            for _ in range(2):
-                c = caster_player.draw_card()
-                if c: caster_player.hand.append(c)
+        # Ghi chú: Việc rút bài (Ocean Blessing, Wind Blessing) được xử lý trong main.py
+        # với animation draw card, không xử lý ở đây nữa.
 
     @staticmethod
     def bot_ai_turn(bot, board):
@@ -164,6 +163,8 @@ class GameEngine:
                 if dead_mons and empty_slots:
                     revived = dead_mons[0]
                     bot.graveyard.remove(revived)
+                    revive_pct = 0.5 if spell.name == "Phoenix Rebirth" else 0.4
+                    revived.current_hp = max(1, int(revived.stat_hp * revive_pct))
                     actions.append({"type": "SPELL", "card": spell, "target": empty_slots[0], "side": "BOT", "target_side": "BOT", "revived_card": revived})
                     bot.hand.remove(spell)
                     bot.pending_spells.append(spell)
