@@ -30,7 +30,13 @@ class Card:
         self.description = description
         self.image_path = image_path 
 
-        cache_key = (image_path, name)
+        self._load_images()
+
+    def _load_images(self):
+        """
+        Xử lý nạp và cache hình ảnh. Được tách riêng để gọi lại sau khi giải mã (unpickle) từ mạng.
+        """
+        cache_key = (self.image_path, self.name)
         if cache_key in _IMAGE_CACHE:
             cached_data = _IMAGE_CACHE[cache_key]
             self.image_hand = cached_data['hand']
@@ -38,7 +44,7 @@ class Card:
             self.image_zoom = cached_data['zoom']
         else:
             try:
-                pil_img = Image.open(image_path).convert("RGBA")
+                pil_img = Image.open(self.image_path).convert("RGBA")
                 
                 def apply_rounded_corners(im, rad):
                     circle = Image.new('L', (rad * 2, rad * 2), 0)
@@ -66,6 +72,25 @@ class Card:
                 self.image_hand = pygame.Surface((130, 180), pygame.SRCALPHA); pygame.draw.rect(self.image_hand, (100,100,100), (0,0,130,180), 0, 15)
                 self.image_board = pygame.Surface((160, 210), pygame.SRCALPHA); pygame.draw.rect(self.image_board, (100,100,100), (0,0,160,210), 0, 18)
                 self.image_zoom = pygame.Surface((400, 530), pygame.SRCALPHA); pygame.draw.rect(self.image_zoom, (100,100,100), (0,0,400,530), 0, 35)
+
+    def __getstate__(self):
+        """
+        Tự động chạy trước khi gửi dữ liệu qua mạng (Pickling).
+        Loại bỏ các dữ liệu hình ảnh (Surface) để không làm crash Pickle.
+        """
+        state = self.__dict__.copy()
+        state.pop('image_hand', None)
+        state.pop('image_board', None)
+        state.pop('image_zoom', None)
+        return state
+
+    def __setstate__(self, state):
+        """
+        Tự động chạy khi Client nhận được thẻ bài (Unpickling).
+        Khôi phục các thuộc tính và tiến hành load lại ảnh.
+        """
+        self.__dict__.update(state)
+        self._load_images()
 
     def get_current_stats(self, milestones, board_env=None):
         """
